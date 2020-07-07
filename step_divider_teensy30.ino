@@ -1,3 +1,5 @@
+
+//v2
 /*
  * step divider using a teensy 3.0
  * 
@@ -34,7 +36,7 @@ unsigned long triggerTime;//1000 for gate mode?;// trigger time needs to be diff
 unsigned long triggerGate = 1000;
 unsigned long triggerTrig =50;
 volatile bool RotFlag = false;
-int check =0;
+int check1 =0;
 //---------------//
 //add switch for trigger being Gate sent or trigger sent = different reset times
 //if gate mode, div indicator leds = green
@@ -56,7 +58,8 @@ volatile bool resetFlag = false; // Reset flag, set in the reset ISR
 
 unsigned long n = 7; // Number of divisions
 unsigned long count = -1; // Input clock counter, -1 in order to go to 0 no the first pulse
-int DIVISIONS[8] { 1, 2, 4, 8, 16, 32,64,0}; //divisions of the input clock 
+int DIVISIONS[8]= { 1, 2, 4, 8, 16, 32,64,0}; //divisions of the input clock 
+int baseLine[8]={1,2,4,8,16,32,64};
 int divHolderEnd =0; //slot for rotarion value
 int divHolderFront=0; //slot for rotation value
 
@@ -130,18 +133,28 @@ if(RotFlag == true){
   }
   
 if(RotFlag == false){
-  check = analogRead(ROT);//check to see if input on A6
-  if (check >250){
+  check1 = analogRead(ROT);//check to see if input on A6
+  if (check1 >350){
+   // Serial.println("RotFlag");//Debug
     RotFlag = true;
     divHolderFront = DIVISIONS[6];
         for(int rotate=6; rotate>0;rotate--){ 
           DIVISIONS[rotate] = DIVISIONS[rotate-1];
-  //        Serial.println("yes");
+       //   Serial.println("yes");
           }
+      
     DIVISIONS[0] = divHolderFront; 
-    newTime =millis();}
+    newTime =millis();
+    /*      Serial.print(DIVISIONS[0]);Serial.print(", "); //Debug
+          Serial.print(DIVISIONS[1]);Serial.print(", ");
+          Serial.print(DIVISIONS[2]);Serial.print(", ");
+          Serial.print(DIVISIONS[3]);Serial.print(", ");
+          Serial.print(DIVISIONS[4]);Serial.print(", ");
+          Serial.print(DIVISIONS[5]);Serial.print(", ");
+          Serial.println(DIVISIONS[6]);
+          */
  }
-  
+}
 //------check if clock signal received------------------//
   // Clock signal changed
   if (clockFlag) {
@@ -152,13 +165,17 @@ if(RotFlag == false){
         
         resetFlag = false;
         count = 0;
+        for(int x=0;x<7;x++){
+          DIVISIONS[x]=baseLine[x];
+        }
+
       } else {
         count++;
       }
       //-------------------------
-   //   if(count >= 64){//(16*4)){
-   //     count=0;
-   //   }
+  //    if(count >= 5529){
+  //      count=0;
+  //    }
     }
     processTriggerMode();//update outputs
   }
